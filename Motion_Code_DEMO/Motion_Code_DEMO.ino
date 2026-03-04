@@ -1,81 +1,98 @@
-
 #include <Servo.h>
 
-Servo myservo1;
-Servo myservo2;
-Servo myservo3;
-Servo myservo4;
+Servo myservo1; //FRONT RIGHT
+Servo myservo2; //BACK RIGHT
+Servo myservo3; //BACK LEFT
+Servo myservo4; //FRONT LEFT
 
-char cmd = 'S';
+char cmd = 'S';   // Default state = Stop
 
 void setup() {
   Serial.begin(9600);
 
-  myservo1.attach(9);
-  myservo2.attach(10);
-  myservo3.attach(11);
-  myservo4.attach(12);
+  myservo1.attach(3);
+  myservo2.attach(2);
+  myservo3.attach(A0); //Reversed
+  myservo4.attach(12); //Reversed
 
-  stop_motors();
+  stop_motors();   // Stop at startup (IMPORTANT)
 }
 
 void loop() {
 
+  // Read serial safely
   if (Serial.available() > 0) {
-    cmd = Serial.read();
+    char incoming = Serial.read();
+
+    // Accept only valid commands
+    if (incoming == 'F' || incoming == 'B' || 
+        incoming == 'L' || incoming == 'R' || 
+        incoming == 'S') {
+      cmd = incoming;
+    }
   }
 
-  if (cmd == 'F') {
-    move_forward();
-  }
-  else if (cmd == 'B') {
-    move_backward();
-  }
-  else if (cmd == 'L') {
-    turn_left();
-  }
-  else if (cmd == 'R') {
-    turn_right();
-  }
-  else if (cmd == 'S') {
-    stop_motors();
+  // Execute command
+  switch (cmd) {
+    case 'F':
+      move_forward();
+      break;
+
+    case 'B':
+      move_backward();
+      break;
+
+    case 'L':
+      turn_left();
+      break;
+
+    case 'R':
+      turn_right();
+      break;
+
+    case 'S':
+      stop_motors();
+      break;
   }
 }
 
+// =======================
+// MOVEMENT FUNCTIONS
+// =======================
 
-// FORWARD (as you defined)
+// FORWARD
 void move_forward() {
-  myservo1.write(0);
+  myservo1.write(180);
   myservo2.write(180);
   myservo3.write(0);
-  myservo4.write(180);
+  myservo4.write(0);
 }
 
-// BACKWARD = opposite of forward
+// BACKWARD
 void move_backward() {
-  myservo1.write(180);
+  myservo1.write(0);
   myservo2.write(0);
   myservo3.write(180);
-  myservo4.write(0);
-}
-
-// LEFT turn
-void turn_left() {
-  myservo1.write(180);   // left side backward
-  myservo2.write(180);
-  myservo3.write(0);     // right side forward
-  myservo4.write(0);
-}
-
-// RIGHT turn
-void turn_right() {
-  myservo1.write(0);     // left side forward
-  myservo2.write(0);
-  myservo3.write(180);   // right side backward
   myservo4.write(180);
 }
 
-// STOP (neutral)
+// LEFT TURN
+void turn_left() {
+  myservo1.write(180);
+  myservo2.write(180);
+  myservo3.write(180);
+  myservo4.write(180);
+}
+
+// RIGHT TURN
+void turn_right() {
+  myservo1.write(0);
+  myservo2.write(0);
+  myservo3.write(0);
+  myservo4.write(0);
+}
+
+// STOP
 void stop_motors() {
   myservo1.write(90);
   myservo2.write(90);
