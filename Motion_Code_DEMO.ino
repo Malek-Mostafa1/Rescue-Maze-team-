@@ -5,56 +5,55 @@ Servo myservo2; //BACK RIGHT
 Servo myservo3; //BACK LEFT
 Servo myservo4; //FRONT LEFT
 
-char cmd = 'S';   // Default state = Stop
+char direction = 'S';
+int speedValue = 30;
 
 void setup() {
-  Serial.begin(9600);
+
+  Serial.begin(115200);
 
   myservo1.attach(3);
   myservo2.attach(2);
-  myservo3.attach(A0); //Reversed
-  myservo4.attach(12); //Reversed
+  myservo3.attach(A0);
+  myservo4.attach(12);
 
-  stop_motors();   // Stop at startup (IMPORTANT)
-  
-  // Let us know the Arduino is awake and the Serial Monitor is working
-  Serial.println("Robot Ready! Send F, B, L, R, or S.");
+  stop_motors();
+
+  Serial.println("Send commands like F40 B30 L50 R60");
 }
 
 void loop() {
 
-  // Read serial safely
-  if (Serial.available() > 0) {
-    char incoming = Serial.read();
+  if (Serial.available()) {
 
-    // Accept only valid commands
-    if (incoming == 'F' || incoming == 'B' || 
-        incoming == 'L' || incoming == 'R' || 
-        incoming == 'S') {
-      cmd = incoming;
-      
-      // DEBUG: Print the accepted command to the screen
-      Serial.print("Executing Command: ");
-      Serial.println(cmd);
-    }
+    String cmd = Serial.readStringUntil('\n');
+
+    direction = cmd.charAt(0);         // First letter
+    speedValue = cmd.substring(1).toInt(); // Number after letter
+
+    Serial.print("Direction: ");
+    Serial.println(direction);
+
+    Serial.print("Speed: ");
+    Serial.println(speedValue);
   }
 
-  // Execute command
-  switch (cmd) {
+  switch(direction) {
+
     case 'F':
-      move_forward();
+      move_forward(speedValue);
       break;
 
     case 'B':
-      move_backward();
+      move_backward(speedValue);
       break;
 
     case 'L':
-      turn_left();
+      turn_left(speedValue);
       break;
 
     case 'R':
-      turn_right();
+      turn_right(speedValue);
       break;
 
     case 'S':
@@ -63,43 +62,37 @@ void loop() {
   }
 }
 
-// =======================
-// MOVEMENT FUNCTIONS
-// =======================
-
-// FORWARD
-void move_forward() {
-  myservo1.write(180);
-  myservo2.write(180);
-  myservo3.write(0);
-  myservo4.write(0);
+void move_forward(int spd) {
+  myservo1.write(90 + spd);
+  myservo2.write(90 + spd);
+  myservo3.write(90 - spd);
+  myservo4.write(90 - spd);
 }
 
-// BACKWARD
-void move_backward() {
-  myservo1.write(0);
-  myservo2.write(0);
-  myservo3.write(180);
-  myservo4.write(180);
+void move_backward(int spd) {
+
+  myservo1.write(90 - spd);
+  myservo2.write(90 - spd);
+  myservo3.write(90 + spd);
+  myservo4.write(90 + spd);
 }
 
-// LEFT TURN
-void turn_left() {
-  myservo1.write(180);
-  myservo2.write(180);
-  myservo3.write(180);
-  myservo4.write(180);
+void turn_left(int spd) {
+
+  myservo1.write(90 + spd);
+  myservo2.write(90 + spd);
+  myservo3.write(90 + spd);
+  myservo4.write(90 + spd);
 }
 
-// RIGHT TURN
-void turn_right() {
-  myservo1.write(0);
-  myservo2.write(0);
-  myservo3.write(0);
-  myservo4.write(0);
+void turn_right(int spd) {
+
+  myservo1.write(90 - spd);
+  myservo2.write(90 - spd);
+  myservo3.write(90 - spd);
+  myservo4.write(90 - spd);
 }
 
-// STOP
 void stop_motors() {
   myservo1.write(90);
   myservo2.write(90);
