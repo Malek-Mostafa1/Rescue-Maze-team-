@@ -1,0 +1,48 @@
+#include <Wire.h>
+#include <Adafruit_TCS34725.h>
+
+
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(
+  TCS34725_INTEGRATIONTIME_50MS,
+  TCS34725_GAIN_4X
+);
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("TCS34725 / ICS3472 Color Sensor Test");
+
+  if (!tcs.begin()) {
+    Serial.println("ERROR: Sensor not found! Check wiring.");
+    while (1); // Halt
+  }
+
+  Serial.println("Sensor found! Starting readings...\n");
+}
+
+void loop() {
+  uint16_t r, g, b, c;
+
+  tcs.getRawData(&r, &g, &b, &c);
+
+  // Calculate color temperature and lux
+  uint16_t colorTemp = tcs.calculateColorTemperature_dn40(r, g, b, c);
+  uint16_t lux       = tcs.calculateLux(r, g, b);
+
+  Serial.print("Raw  -> R: "); Serial.print(r);
+  Serial.print("  G: ");       Serial.print(g);
+  Serial.print("  B: ");       Serial.print(b);
+  Serial.print("  Clear: ");   Serial.println(c);
+
+  Serial.print("Color Temp: "); Serial.print(colorTemp); Serial.println(" K");
+  Serial.print("Lux:        "); Serial.print(lux);       Serial.println(" lx");
+
+  // Simple dominant color detection
+  Serial.print("Dominant color: ");
+  if (r > g && r > b)      Serial.println("RED");
+  else if (g > r && g > b) Serial.println("GREEN");
+  else if (b > r && b > g) Serial.println("BLUE");
+  else                      Serial.println("MIXED / WHITE");
+
+  Serial.println("------------------OP IS OVER--------------");
+  delay(1000);
+}
